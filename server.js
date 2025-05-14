@@ -12,6 +12,8 @@ const { STATUS_CODE } = require("./constants/statusCode");
 const { MENU_LINKS } = require("./constants/navigation");
 const cartController = require("./controllers/cartController");
 
+const { mongoConnect } = require("./database"); 
+
 const app = express();
 
 app.set("view engine", "ejs");
@@ -22,7 +24,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use((request, _response, next) => {
   const { url, method } = request;
-
   logger.getInfoLog(url, method);
   next();
 });
@@ -31,6 +32,7 @@ app.use("/products", productsRoutes);
 app.use("/logout", logoutRoutes);
 app.use("/kill", killRoutes);
 app.use(homeRoutes);
+
 app.use((request, response) => {
   const { url } = request;
   const cartCount = cartController.getProductsCount();
@@ -44,4 +46,8 @@ app.use((request, response) => {
   logger.getErrorLog(url);
 });
 
-app.listen(PORT);
+mongoConnect(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+});
